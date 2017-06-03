@@ -3,15 +3,16 @@ package com.dfirago.authenticationapp.login;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dfirago.authenticationapp.R;
 import com.dfirago.authenticationapp.common.auth.CognitoService;
 import com.dfirago.authenticationapp.common.validation.OnFocusLostValidation;
-import com.dfirago.authenticationapp.common.validation.OnFocusLostValidations;
 import com.dfirago.authenticationapp.common.validation.OnTextChangedValidation;
-import com.dfirago.authenticationapp.common.validation.OnTextChangedValidations;
+import com.dfirago.authenticationapp.common.validation.SaripaarValidator;
+import com.dfirago.authenticationapp.common.validation.ValidationTrigger;
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 import com.mobsandgeeks.saripaar.annotation.Order;
 
@@ -35,6 +36,10 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
     @BindView(R.id.password)
     protected EditText passwordView;
 
+    @ValidationTrigger
+    @BindView(R.id.sign_in_button)
+    protected Button loginButton;
+
     private ProgressDialog progress;
     private LoginPresenter presenter;
 
@@ -43,8 +48,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        OnFocusLostValidations.bind(this);
-        OnTextChangedValidations.bind(this);
+        SaripaarValidator.bind(this);
         presenter = new LoginPresenter(new CognitoService());
     }
 
@@ -60,7 +64,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         super.onPause();
     }
 
-    @OnClick(R.id.email_sign_in_button)
+    @OnClick(R.id.sign_in_button)
     protected void onLoginClick() {
         String email = emailView.getText().toString();
         String password = passwordView.getText().toString();
