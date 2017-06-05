@@ -9,12 +9,10 @@ import android.widget.Toast;
 
 import com.dfirago.authenticationapp.R;
 import com.dfirago.authenticationapp.common.auth.CognitoService;
-import com.dfirago.authenticationapp.common.validation.OnFocusLostValidation;
-import com.dfirago.authenticationapp.common.validation.OnTextChangedValidation;
-import com.dfirago.authenticationapp.common.validation.SaripaarValidator;
-import com.dfirago.authenticationapp.common.validation.ValidationTrigger;
-import com.mobsandgeeks.saripaar.annotation.NotEmpty;
-import com.mobsandgeeks.saripaar.annotation.Order;
+import com.dfirago.authenticationapp.common.validation.annotation.NotEmpty;
+import com.dfirago.authenticationapp.common.validation.annotation.ValidationListener;
+import com.dfirago.authenticationapp.common.validation.annotation.ValidationTrigger;
+import com.dfirago.authenticationapp.common.validation.ValidationBinder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -22,17 +20,13 @@ import butterknife.OnClick;
 
 public class LoginActivity extends AppCompatActivity implements LoginView {
 
-    @Order(10)
     @NotEmpty
-    @OnFocusLostValidation
-    @OnTextChangedValidation
+    @ValidationListener(onTextChanged = true)
     @BindView(R.id.email)
     protected EditText emailView;
 
-    @Order(20)
     @NotEmpty
-    @OnFocusLostValidation
-    @OnTextChangedValidation
+    @ValidationListener(onTextChanged = true)
     @BindView(R.id.password)
     protected EditText passwordView;
 
@@ -48,7 +42,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        SaripaarValidator.bind(this);
+        ValidationBinder.bind(this);
         presenter = new LoginPresenter(new CognitoService());
     }
 
