@@ -1,6 +1,7 @@
 package com.dfirago.authenticationapp.login;
 
-import com.dfirago.authenticationapp.common.auth.CognitoService;
+import com.dfirago.authenticationapp.common.auth.google.FirebaseService;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -27,7 +28,9 @@ import static org.mockito.Mockito.when;
 public class LoginPresenterTest {
 
     @Mock
-    private CognitoService cognitoService;
+    private FirebaseService firebaseService;
+    @Mock
+    private FirebaseUser firebaseUser;
     @Mock
     private LoginView loginView;
 
@@ -41,14 +44,14 @@ public class LoginPresenterTest {
 
     @Before
     public void setUp() throws Exception {
-        loginPresenter = new LoginPresenter(cognitoService);
+        loginPresenter = new LoginPresenter(firebaseService);
         loginPresenter.attachView(loginView);
     }
 
     @Test
     public void authenticate_success() throws Exception {
-        when(cognitoService.authenticate("login", "password"))
-                .thenReturn(Single.just(true));
+        when(firebaseService.authenticate("login", "password"))
+                .thenReturn(Single.just(firebaseUser));
         loginPresenter.authenticate("login", "password");
         InOrder loginViewOrder = inOrder(loginView);
         loginViewOrder.verify(loginView, times(1)).onAuthenticationStarted();

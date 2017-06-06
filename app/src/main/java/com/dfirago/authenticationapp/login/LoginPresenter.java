@@ -3,7 +3,7 @@ package com.dfirago.authenticationapp.login;
 import android.support.annotation.NonNull;
 
 import com.dfirago.authenticationapp.BasePresenter;
-import com.dfirago.authenticationapp.common.auth.CognitoService;
+import com.dfirago.authenticationapp.common.auth.google.FirebaseService;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -13,25 +13,23 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class LoginPresenter extends BasePresenter<LoginView> {
 
-    private CognitoService cognitoService;
+    private FirebaseService firebaseService;
 
-    public LoginPresenter(CognitoService cognitoService) {
-        this.cognitoService = cognitoService;
+    public LoginPresenter(FirebaseService firebaseService) {
+        this.firebaseService = firebaseService;
     }
 
     public void authenticate(@NonNull String email, @NonNull String password) {
-        cognitoService.authenticate(email, password)
+        firebaseService.authenticate(email, password)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(disposable -> view().onAuthenticationStarted())
-                .subscribe(result -> {
-                    if (result) {
-                        view().onAuthenticationFinished();
-                        view().onAuthenticationSuccess();
-                    } else {
-                        view().onAuthenticationFinished();
-                        view().onAuthenticationFailure();
-                    }
+                .subscribe(user -> {
+                    view().onAuthenticationFinished();
+                    view().onAuthenticationSuccess();
+                }, error -> {
+                    view().onAuthenticationFinished();
+                    view().onAuthenticationFailure();
                 });
     }
 

@@ -8,11 +8,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dfirago.authenticationapp.R;
-import com.dfirago.authenticationapp.common.auth.CognitoService;
+import com.dfirago.authenticationapp.common.auth.google.FirebaseService;
+import com.dfirago.authenticationapp.common.validation.ValidationBinder;
 import com.dfirago.authenticationapp.common.validation.annotation.NotEmpty;
 import com.dfirago.authenticationapp.common.validation.annotation.ValidationListener;
 import com.dfirago.authenticationapp.common.validation.annotation.ValidationTrigger;
-import com.dfirago.authenticationapp.common.validation.ValidationBinder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,7 +43,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         ValidationBinder.bind(this);
-        presenter = new LoginPresenter(new CognitoService());
+        presenter = new LoginPresenter(new FirebaseService());
     }
 
     @Override
