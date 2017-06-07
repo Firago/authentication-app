@@ -22,13 +22,26 @@ import java.util.Set;
  */
 public abstract class ReflectionUtils {
 
-    public static List<Field> getControllerFields(final Class<?> controllerClass,
+    public static Object getControllerProperty(final Object target, final String property) throws NoSuchFieldException {
+        Class<?> targetClass = target.getClass();
+        while (!targetClass.equals(Object.class)) {
+            try {
+                final Field field = targetClass.getDeclaredField(property);
+                return getFieldValue(field, target);
+            } catch (NoSuchFieldException e) {
+                targetClass = targetClass.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException("Field not found: " + property);
+    }
+
+    public static List<Field> getControllerFields(final Class<?> targetClass,
                                                   final Class<?> fieldClass) {
         final List<Field> controllerViewFields = new ArrayList<>();
         // Fields declared in the controller
-        controllerViewFields.addAll(getFields(controllerClass, fieldClass));
+        controllerViewFields.addAll(getFields(targetClass, fieldClass));
         // Inherited fields
-        Class<?> superClass = controllerClass.getSuperclass();
+        Class<?> superClass = targetClass.getSuperclass();
         while (!superClass.equals(Object.class)) {
             List<Field> viewFields = getFields(superClass, fieldClass);
             if (viewFields.size() > 0) {

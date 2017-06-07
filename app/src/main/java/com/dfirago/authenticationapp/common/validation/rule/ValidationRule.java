@@ -2,6 +2,7 @@ package com.dfirago.authenticationapp.common.validation.rule;
 
 import android.content.Context;
 
+import com.dfirago.authenticationapp.common.validation.ValidationContext;
 import com.dfirago.authenticationapp.common.validation.utils.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
@@ -25,7 +26,8 @@ public abstract class ValidationRule<AnnotationType extends Annotation, Validata
         this.annotation = annotation;
     }
 
-    public abstract boolean validate(final Validatable validatable);
+    public abstract boolean validate(final ValidationContext validationContext,
+                                     final Validatable validatable);
 
     public String getErrorMessage() {
         final int messageResId = ReflectionUtils

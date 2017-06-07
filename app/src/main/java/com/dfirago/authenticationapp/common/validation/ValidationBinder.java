@@ -1,6 +1,5 @@
 package com.dfirago.authenticationapp.common.validation;
 
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.text.Editable;
@@ -23,28 +22,30 @@ import java.util.List;
 public abstract class ValidationBinder {
 
     @UiThread
-    public static void bind(@NonNull final Activity target) {
-        bind(target, new Validator.DefaultValidationListener());
+    public static Validator bind(@NonNull final Object controller) {
+        return bind(controller, new Validator.DefaultValidationListener());
     }
 
     @UiThread
-    public static void bind(@NonNull final Activity target,
-                            @NonNull final Validator.ValidationListener validationListener) {
-        // initialize validator
-        final Validator validator = new Validator(target);
+    public static Validator bind(@NonNull final Object controller,
+                                 @NonNull final Validator.ValidationListener validationListener) {
+        final ValidationContext validationContext = new ValidationContext(controller);
+        final Validator validator = new Validator(validationContext);
         validator.setValidationListener(validationListener);
         // bind validation listeners
-        bindListeners(target, validator);
+        bindListeners(controller, validator);
         // bind validation triggers
-        bindTriggers(target, validator);
+        bindTriggers(controller, validator);
+
+        return validator;
     }
 
-    private static void bindListeners(@NonNull final Activity target,
+    private static void bindListeners(@NonNull final Object controller,
                                       @NonNull final Validator validator) {
         final List<Field> fields = ReflectionUtils
-                .getControllerFields(target.getClass(), TextView.class);
+                .getControllerFields(controller.getClass(), TextView.class);
         for (Field field : fields) {
-            final TextView view = (TextView) ReflectionUtils.getFieldValue(field, target);
+            final TextView view = (TextView) ReflectionUtils.getFieldValue(field, controller);
             final ValidationListener validationListener
                     = field.getAnnotation(ValidationListener.class);
             if (validationListener != null) {
@@ -62,30 +63,29 @@ public abstract class ValidationBinder {
         }
     }
 
-    private static void bindTriggers(@NonNull final Activity target,
+    private static void bindTriggers(@NonNull final Object controller,
                                      @NonNull final Validator validator) {
         final List<Field> fields = ReflectionUtils
-                .getControllerFields(target.getClass(), View.class);
+                .getControllerFields(controller.getClass(), View.class);
         for (Field field : fields) {
-            final View view = (View) ReflectionUtils.getFieldValue(field, target);
+            final View view = (View) ReflectionUtils.getFieldValue(field, controller);
             // add validation on fields marked with ValidationTrigger
             if (field.isAnnotationPresent(ValidationTrigger.class)) {
                 final View.OnClickListener existingListener
                         = ReflectionUtils.getOnClickListener(view);
-                if (existingListener != null) {
-                    final Method existingListenerMethod = ReflectionUtils
-                            .getOnClickListenerMethod(existingListener);
-                    view.setOnClickListener(v -> {
-                        BatchValidationResult validationResult = validator.validate();
-                        if (!validationResult.isFailed()) {
-                            try {
-                                existingListenerMethod.invoke(existingListener, v);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                throw new RuntimeException("Failed to execute existing listener method", e);
-                            }
+                final Method existingListenerMethod =
+                        existingListener == null ? null
+                                : ReflectionUtils.getOnClickListenerMethod(existingListener);
+                view.setOnClickListener(v -> {
+                    BatchValidationResult validationResult = validator.validate();
+                    if (existingListenerMethod != null && !validationResult.isFailed()) {
+                        try {
+                            existingListenerMethod.invoke(existingListener, v);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            throw new RuntimeException("Failed to execute existing listener method", e);
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     }
